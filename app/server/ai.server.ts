@@ -1,4 +1,12 @@
 import { ROOMIFY_RENDER_PROMPT } from "../../lib/constants";
+import { closestAspect } from "./image-size.server";
+
+// Output shapes each provider supports; the render keeps the floor plan's proportions.
+const GEMINI_ASPECTS = {
+    "1:1": 1, "4:3": 4 / 3, "3:4": 3 / 4, "3:2": 3 / 2, "2:3": 2 / 3,
+    "5:4": 5 / 4, "4:5": 4 / 5, "16:9": 16 / 9, "9:16": 9 / 16, "21:9": 21 / 9,
+};
+const OPENAI_SIZES = { "1024x1024": 1, "1536x1024": 1.5, "1024x1536": 2 / 3 };
 
 type RenderInput = { image: Buffer; mimeType: string };
 type RenderOutput = { image: Buffer; mimeType: string };
@@ -31,7 +39,7 @@ const renderWithGemini = async ({ image, mimeType }: RenderInput): Promise<Rende
             }],
             generationConfig: {
                 responseModalities: ["IMAGE"],
-                imageConfig: { aspectRatio: "1:1" },
+                imageConfig: { aspectRatio: closestAspect(image, GEMINI_ASPECTS, "1:1") },
             },
         }),
     });
@@ -62,7 +70,7 @@ const renderWithOpenAI = async ({ image, mimeType }: RenderInput): Promise<Rende
     const form = new FormData();
     form.append("model", model);
     form.append("prompt", ROOMIFY_RENDER_PROMPT);
-    form.append("size", "1024x1024");
+    form.append("size", closestAspect(image, OPENAI_SIZES, "1024x1024"));
     form.append("image", new Blob([new Uint8Array(image)], { type: mimeType }), `floorplan.${ext}`);
 
     const response = await fetch("https://api.openai.com/v1/images/edits", {

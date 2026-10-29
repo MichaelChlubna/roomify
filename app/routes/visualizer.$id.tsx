@@ -21,6 +21,16 @@ const VisualizerId = () => {
     const [renderError, setRenderError] = useState<string | null>(null);
     const [currentImage, setCurrentImage] = useState<string | null>(null);
     const [shareStatus, setShareStatus] = useState<ShareStatus>("idle");
+    // Width/height of the floor plan; the comparison box takes this shape so neither image is cropped.
+    const [sourceRatio, setSourceRatio] = useState<number | null>(null);
+
+    useEffect(() => {
+        if (!project?.sourceImage) return;
+
+        const img = new Image();
+        img.onload = () => setSourceRatio(img.naturalWidth / img.naturalHeight || null);
+        img.src = project.sourceImage;
+    }, [project?.sourceImage]);
 
     const shareUrl = typeof window !== "undefined" && id ? `${window.location.origin}/visualizer/${id}` : "";
 
@@ -252,12 +262,12 @@ const VisualizerId = () => {
                         {project?.sourceImage && currentImage ? (
                             <ReactCompareSlider
                                 defaultValue={50}
-                                style={{ width: '100%', height: 'auto' }}
+                                style={{ width: '100%', aspectRatio: sourceRatio ?? 1 }}
                                 itemOne={
-                                    <ReactCompareSliderImage src={project?.sourceImage} alt="před" className="compare-img" />
+                                    <ReactCompareSliderImage src={project?.sourceImage} alt="před" style={{ objectFit: 'contain' }} />
                                 }
                                 itemTwo={
-                                    <ReactCompareSliderImage src={currentImage || project?.renderedImage || ''} alt="po" className="compare-img" />
+                                    <ReactCompareSliderImage src={currentImage || project?.renderedImage || ''} alt="po" style={{ objectFit: 'contain' }} />
                                 }
                             />
                         ) : (
