@@ -1,7 +1,6 @@
 import type { Route } from "./+types/home";
 import Navbar from "../../components/Navbar";
 import {ArrowRight, ArrowUpRight, Clock, Layers} from "lucide-react";
-import Button from "../../components/ui/Button";
 import Upload from "../../components/Upload";
 import {useNavigate, useOutletContext} from "react-router";
 import {useEffect, useRef, useState} from "react";
@@ -9,8 +8,8 @@ import {createProject, getProjects} from "../../lib/api";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
+    { title: "Roomify" },
+    { name: "description", content: "Turn 2D floor plans into photorealistic 3D renders." },
   ];
 }
 
@@ -71,17 +70,14 @@ export default function Home() {
 
           <section className="hero">
               <div className="announce">
-                  <div className="dot">
-                      <div className="pulse"></div>
-                  </div>
-
-                  <p>Introducing Roomify 2.0</p>
+                  <div className="dot" />
+                  <p>AI floor plan visualization</p>
               </div>
 
-              <h1>Build beautiful spaces at the speed of thought with Roomify</h1>
+              <h1>Turn a floor plan into a <em>3D render</em></h1>
 
               <p className="subtitle">
-                  Roomify is an AI-first design environment that helps you visualize, render, and ship architectural projects faster  than ever.
+                  Upload a 2D floor plan and get a photorealistic top-down render with walls, doors, windows and furniture in under a minute.
               </p>
 
               <div className="actions">
@@ -89,9 +85,9 @@ export default function Home() {
                       Start Building <ArrowRight className="icon" />
                   </a>
 
-                  <Button variant="outline" size="lg" className="demo">
-                      Watch Demo
-                  </Button>
+                  <a href="#projects" className="btn btn--outline btn--lg">
+                      My projects
+                  </a>
               </div>
 
               <div id="upload" className="upload-shell">
@@ -112,7 +108,7 @@ export default function Home() {
               </div>
           </section>
 
-          <section className="projects">
+          <section id="projects" className="projects">
               <div className="section-inner">
                   <div className="section-head">
                       <div className="copy">

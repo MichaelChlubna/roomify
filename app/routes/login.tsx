@@ -1,6 +1,5 @@
 import type { Route } from "./+types/login";
-import {Box} from "lucide-react";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {Link, useNavigate, useOutletContext} from "react-router";
 import Button from "../../components/ui/Button";
 import {register, signIn} from "../../lib/api";
@@ -19,6 +18,15 @@ export default function Login() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const [allowRegistration, setAllowRegistration] = useState(false);
+
+    useEffect(() => {
+        fetch("/api/auth")
+            .then((res) => res.json())
+            .then((data) => setAllowRegistration(!!data?.allowRegistration))
+            .catch(() => setAllowRegistration(false));
+    }, []);
 
     const isRegister = mode === "register";
 
@@ -43,18 +51,18 @@ export default function Login() {
         }
     };
 
-    const inputClass = "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary";
+    const inputClass = "auth-input";
 
     return (
-        <div className="min-h-screen flex items-center justify-center px-4">
-            <div className="w-full max-w-sm rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
-                <Link to="/" className="flex items-center gap-2 mb-6">
-                    <Box className="w-6 h-6 text-primary" />
-                    <span className="font-serif text-2xl">Roomify</span>
+        <div className="auth-page">
+            <div className="auth-card">
+                <Link to="/" className="flex items-center gap-2.5 mb-7">
+                    <span className="logo-mark">R</span>
+                    <span className="text-lg font-bold">Roomify</span>
                 </Link>
 
-                <h1 className="text-3xl mb-1">{isRegister ? "Create an account" : "Welcome back"}</h1>
-                <p className="text-sm text-zinc-500 mb-6">
+                <h1 className="text-[28px] font-bold mb-1.5">{isRegister ? "Create an account" : "Welcome back"}</h1>
+                <p className="text-[15px] text-subtle-foreground mb-6">
                     {isRegister ? "Start turning floor plans into 3D renders." : "Sign in to your projects."}
                 </p>
 
@@ -70,20 +78,22 @@ export default function Login() {
                            onChange={(e) => setPassword(e.target.value)}
                            autoComplete={isRegister ? "new-password" : "current-password"} />
 
-                    {error && <p className="text-sm text-red-600">{error}</p>}
+                    {error && <p className="text-sm text-destructive">{error}</p>}
 
                     <Button type="submit" fullWidth disabled={isSubmitting}>
                         {isSubmitting ? "Please wait..." : isRegister ? "Create account" : "Sign in"}
                     </Button>
                 </form>
 
-                <p className="text-sm text-zinc-500 mt-6 text-center">
-                    {isRegister ? "Already have an account?" : "No account yet?"}{" "}
-                    <button type="button" className="text-primary font-medium"
-                            onClick={() => { setMode(isRegister ? "login" : "register"); setError(null); }}>
-                        {isRegister ? "Sign in" : "Create one"}
-                    </button>
-                </p>
+                {(allowRegistration || isRegister) && (
+                    <p className="text-sm text-muted-foreground mt-6 text-center">
+                        {isRegister ? "Already have an account?" : "No account yet?"}{" "}
+                        <button type="button" className="text-primary font-semibold"
+                                onClick={() => { setMode(isRegister ? "login" : "register"); setError(null); }}>
+                            {isRegister ? "Sign in" : "Create one"}
+                        </button>
+                    </p>
+                )}
             </div>
         </div>
     );
