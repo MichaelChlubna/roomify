@@ -40,11 +40,11 @@ export const register = ({ name, email, password }: { name: string; email: strin
 export const signOut = () =>
     request("/api/auth", { method: "POST", body: JSON.stringify({ intent: "logout" }) });
 
-export const createProject = async ({ name, sourceImage }: { name: string; sourceImage: string }) => {
+export const createProject = async ({ name, kind, sourceImage }: { name: string; kind: DesignItem["kind"]; sourceImage: string }) => {
     try {
         const { project } = await request<{ project: DesignItem }>("/api/projects", {
             method: "POST",
-            body: JSON.stringify({ name, sourceImage }),
+            body: JSON.stringify({ name, kind, sourceImage }),
         });
         return project;
     } catch (e) {
@@ -74,9 +74,11 @@ export const getProjectById = async ({ id }: { id: string }) => {
 };
 
 // Runs the AI render on the server and returns the updated project.
-export const renderProject = async ({ id }: { id: string }) => {
+// Room photos also send the chosen style and/or a free-text request.
+export const renderProject = async ({ id, style, instructions }: { id: string; style?: string | null; instructions?: string }) => {
     const { project } = await request<{ project: DesignItem }>(`/api/projects/${encodeURIComponent(id)}/render`, {
         method: "POST",
+        body: JSON.stringify({ style, instructions }),
     });
     return project;
 };

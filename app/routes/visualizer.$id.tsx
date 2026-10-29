@@ -1,9 +1,9 @@
 import { useNavigate, useOutletContext, useParams} from "react-router";
 import {useEffect, useRef, useState} from "react";
-import {Check, Copy, Download, RefreshCcw, Share2, X} from "lucide-react";
+import {Check, Copy, Download, RefreshCcw, Share2, Sparkles, X} from "lucide-react";
 import Button from "../../components/ui/Button";
 import {getProjectById, renderProject, setProjectVisibility} from "../../lib/api";
-import {APP_NAME, SHARE_STATUS_RESET_DELAY_MS} from "../../lib/constants";
+import {APP_NAME, findRoomStyle, MAX_ROOM_INSTRUCTIONS_LENGTH, ROOM_STYLES, SHARE_STATUS_RESET_DELAY_MS} from "../../lib/constants";
 import {ReactCompareSlider, ReactCompareSliderImage} from "react-compare-slider";
 
 const VisualizerId = () => {
@@ -16,6 +16,13 @@ const VisualizerId = () => {
     const [project, setProject] = useState<DesignItem | null>(null);
     const [isProjectLoading, setIsProjectLoading] = useState(true);
     const isOwner = !!project && project.ownerId === userId;
+    const isRoom = project?.kind === "room";
+
+    // Room photos: the style and request for the next render, prefilled from the last one.
+    const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
+    const [instructions, setInstructions] = useState("");
+    const canDesign = !!selectedStyle || !!instructions.trim();
+    const appliedStyle = findRoomStyle(project?.style);
 
     const [isProcessing, setIsProcessing] = useState(false);
     const [renderError, setRenderError] = useState<string | null>(null);
@@ -75,7 +82,7 @@ const VisualizerId = () => {
 
         const link = document.createElement('a');
         link.href = currentImage;
-        link.download = `vizualizace-${id || 'projekt'}.png`;
+        link.download = `${isRoom ? 'navrh' : 'vizualizace'}-${id || 'projekt'}.png`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -87,7 +94,9 @@ const VisualizerId = () => {
         try {
             setIsProcessing(true);
             setRenderError(null);
-            const updated = await renderProject({ id: item.id });
+            const updated = item.kind === "room"
+                ? await renderProject({ id: item.id, style: selectedStyle, instructions: instructions.trim() })
+                : await renderProject({ id: item.id });
 
             setProject(updated);
             setCurrentImage(updated.renderedImage || null);
@@ -116,6 +125,8 @@ const VisualizerId = () => {
 
             setProject(fetchedProject);
             setCurrentImage(fetchedProject?.renderedImage || null);
+            setSelectedStyle(fetchedProject?.style ?? null);
+            setInstructions(fetchedProject?.instructions ?? "");
             setIsProjectLoading(false);
             hasInitialGenerated.current = false;
         };
@@ -141,7 +152,8 @@ const VisualizerId = () => {
             return;
         }
 
-        if (!isOwner) return;
+        // Room photos wait for the owner to pick a style first.
+        if (!isOwner || project.kind === "room") return;
 
         hasInitialGenerated.current = true;
         void runGeneration(project);
@@ -175,9 +187,12 @@ const VisualizerId = () => {
                 <div className="panel">
                     <div className="panel-header">
                         <div className="panel-meta">
-                            <p>Projekt</p>
+                            <p>{isRoom ? 'Návrh interiéru' : 'Projekt'}</p>
                             <h2>{project?.name || 'Projekt'}</h2>
-                            <p className="note">{isOwner ? 'Vytvořeno vámi' : `Sdíleno přes ${APP_NAME}`}</p>
+                            <p className="note">
+                                {isOwner ? 'Vytvořeno vámi' : `Sdíleno přes ${APP_NAME}`}
+                                {isRoom && project.renderedImage && appliedStyle && ` · Styl ${appliedStyle.label.toLowerCase()}`}
+                            </p>
                         </div>
 
                         <div className="panel-actions">
@@ -211,13 +226,61 @@ const VisualizerId = () => {
                         </div>
                     )}
 
+                    {isRoom && isOwner && (
+                        <div className="design-controls">
+                            <div className="design-label">
+                                <span>Styl</span>
+                                <span className="hint">Vyberte jeden, nebo jen napište, co chcete</span>
+                            </div>
+                            <div className="style-grid">
+                                {ROOM_STYLES.map((style) => (
+                                    <button
+                                        key={style.id}
+                                        type="button"
+                                        className={`style-chip ${selectedStyle === style.id ? 'is-active' : ''}`}
+                                        aria-pressed={selectedStyle === style.id}
+                                        disabled={isProcessing}
+                                        onClick={() => setSelectedStyle(selectedStyle === style.id ? null : style.id)}
+                                    >
+                                        <span className="label">{style.label}</span>
+                                        <span className="hint">{style.hint}</span>
+                                    </button>
+                                ))}
+                            </div>
+
+                            <label className="design-label" htmlFor="design-instructions">
+                                <span>Vlastní zadání</span>
+                                <span className="hint">Nepovinné</span>
+                            </label>
+                            <textarea
+                                id="design-instructions"
+                                className="design-input"
+                                rows={2}
+                                maxLength={MAX_ROOM_INSTRUCTIONS_LENGTH}
+                                placeholder="Např. zelená pohovka, dřevěná podlaha, víc rostlin, pracovní kout u okna"
+                                value={instructions}
+                                disabled={isProcessing}
+                                onChange={(e) => setInstructions(e.target.value)}
+                            />
+
+                            <div className="design-submit">
+                                <Button onClick={() => runGeneration(project)} disabled={!canDesign || isProcessing}>
+                                    <Sparkles className="w-4 h-4" />
+                                    {currentImage ? 'Vytvořit nový návrh' : 'Vytvořit návrh'}
+                                </Button>
+                                {currentImage && <span className="hint">Nový návrh nahradí ten současný.</span>}
+                            </div>
+                        </div>
+                    )}
+
                     <div className={`render-area ${isProcessing ? 'is-processing': ''}`}>
                         {currentImage ? (
-                            <img src={currentImage} alt="AI vizualizace" className="render-img" />
+                            <img src={currentImage} alt={isRoom ? 'AI návrh interiéru' : 'AI vizualizace'} className="render-img" />
                         ) : (
                             <div className="render-placeholder">
                                 {project?.sourceImage && (
-                                    <img src={project?.sourceImage} alt="Původní půdorys" className="render-fallback" />
+                                    <img src={project?.sourceImage} alt={isRoom ? 'Původní fotka' : 'Původní půdorys'}
+                                         className={`render-fallback ${isRoom && !isProcessing ? 'is-photo' : ''}`} />
                                 )}
                             </div>
                         )}
@@ -226,7 +289,7 @@ const VisualizerId = () => {
                             <div className="render-overlay">
                                 <div className="rendering-card">
                                     <RefreshCcw className="spinner" />
-                                    <span className="title">Vytvářím vizualizaci…</span>
+                                    <span className="title">{isRoom ? 'Navrhuji interiér…' : 'Vytvářím vizualizaci…'}</span>
                                     <span className="subtitle">Obvykle to trvá do minuty</span>
                                 </div>
                             </div>
@@ -235,9 +298,9 @@ const VisualizerId = () => {
                         {!isProcessing && renderError && (
                             <div className="render-overlay">
                                 <div className="rendering-card">
-                                    <span className="title">Vizualizace se nepovedla</span>
+                                    <span className="title">{isRoom ? 'Návrh se nepovedl' : 'Vizualizace se nepovedla'}</span>
                                     <span className="subtitle">{renderError}</span>
-                                    {project && isOwner && (
+                                    {project && isOwner && (!isRoom || canDesign) && (
                                         <Button size="sm" className="mt-3" onClick={() => runGeneration(project)}>
                                             <RefreshCcw className="w-4 h-4" /> Zkusit znovu
                                         </Button>

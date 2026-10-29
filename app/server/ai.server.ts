@@ -1,14 +1,13 @@
-import { ROOMIFY_RENDER_PROMPT } from "../../lib/constants";
 import { closestAspect } from "./image-size.server";
 
-// Output shapes each provider supports; the render keeps the floor plan's proportions.
+// Output shapes each provider supports; the render keeps the input image's proportions.
 const GEMINI_ASPECTS = {
     "1:1": 1, "4:3": 4 / 3, "3:4": 3 / 4, "3:2": 3 / 2, "2:3": 2 / 3,
     "5:4": 5 / 4, "4:5": 4 / 5, "16:9": 16 / 9, "9:16": 9 / 16, "21:9": 21 / 9,
 };
 const OPENAI_SIZES = { "1024x1024": 1, "1536x1024": 1.5, "1024x1536": 2 / 3 };
 
-type RenderInput = { image: Buffer; mimeType: string };
+type RenderInput = { image: Buffer; mimeType: string; prompt: string };
 type RenderOutput = { image: Buffer; mimeType: string };
 
 export type AiProvider = "gemini" | "openai";
@@ -22,8 +21,8 @@ const requireEnv = (name: string) => {
     return value;
 };
 
-// Gemini image model (aka "Nano Banana"): edits the floor plan image directly.
-const renderWithGemini = async ({ image, mimeType }: RenderInput): Promise<RenderOutput> => {
+// Gemini image model (aka "Nano Banana"): edits the input image directly.
+const renderWithGemini = async ({ image, mimeType, prompt }: RenderInput): Promise<RenderOutput> => {
     const apiKey = requireEnv("GEMINI_API_KEY");
     const model = process.env.GEMINI_MODEL || "gemini-3.1-flash-lite-image";
 
@@ -33,7 +32,7 @@ const renderWithGemini = async ({ image, mimeType }: RenderInput): Promise<Rende
         body: JSON.stringify({
             contents: [{
                 parts: [
-                    { text: ROOMIFY_RENDER_PROMPT },
+                    { text: prompt },
                     { inline_data: { mime_type: mimeType, data: image.toString("base64") } },
                 ],
             }],
@@ -62,16 +61,16 @@ const renderWithGemini = async ({ image, mimeType }: RenderInput): Promise<Rende
 };
 
 // OpenAI image edit endpoint (gpt-image-1 family).
-const renderWithOpenAI = async ({ image, mimeType }: RenderInput): Promise<RenderOutput> => {
+const renderWithOpenAI = async ({ image, mimeType, prompt }: RenderInput): Promise<RenderOutput> => {
     const apiKey = requireEnv("OPENAI_API_KEY");
     const model = process.env.OPENAI_IMAGE_MODEL || "gpt-image-1";
     const ext = mimeType.split("/")[1] ?? "png";
 
     const form = new FormData();
     form.append("model", model);
-    form.append("prompt", ROOMIFY_RENDER_PROMPT);
+    form.append("prompt", prompt);
     form.append("size", closestAspect(image, OPENAI_SIZES, "1024x1024"));
-    form.append("image", new Blob([new Uint8Array(image)], { type: mimeType }), `floorplan.${ext}`);
+    form.append("image", new Blob([new Uint8Array(image)], { type: mimeType }), `source.${ext}`);
 
     const response = await fetch("https://api.openai.com/v1/images/edits", {
         method: "POST",
@@ -90,5 +89,5 @@ const renderWithOpenAI = async ({ image, mimeType }: RenderInput): Promise<Rende
     return { image: Buffer.from(b64, "base64"), mimeType: "image/png" };
 };
 
-export const renderFloorPlan = (input: RenderInput) =>
+export const renderImage = (input: RenderInput) =>
     getAiProvider() === "openai" ? renderWithOpenAI(input) : renderWithGemini(input);

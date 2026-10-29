@@ -1,16 +1,16 @@
 import type { Route } from "./+types/home";
 import Navbar from "../../components/Navbar";
-import {ArrowRight, ArrowUpRight, Clock, Layers} from "lucide-react";
+import {ArrowRight, ArrowUpRight, Clock, Layers, Sofa} from "lucide-react";
 import Upload from "../../components/Upload";
 import {useNavigate, useOutletContext} from "react-router";
 import {useEffect, useRef, useState} from "react";
 import {createProject, getProjects} from "../../lib/api";
-import {APP_NAME} from "../../lib/constants";
+import {APP_NAME, type ProjectKind} from "../../lib/constants";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: `${APP_NAME} | Vizualizace půdorysů` },
-    { name: "description", content: "Z 2D půdorysu fotorealistická 3D vizualizace za necelou minutu." },
+    { title: `${APP_NAME} | Vizualizace půdorysů a návrhy interiérů` },
+    { name: "description", content: "Z 2D půdorysu 3D vizualizace, z fotky místnosti nový interiér. Za necelou minutu." },
   ];
 }
 
@@ -19,15 +19,16 @@ export default function Home() {
     const { isSignedIn } = useOutletContext<AuthContext>();
     const [projects, setProjects] = useState<DesignItem[]>([]);
     const isCreatingProjectRef = useRef(false);
+    const [mode, setMode] = useState<ProjectKind>("room");
 
     const handleUploadComplete = async (base64Image: string) => {
         try {
 
             if(isCreatingProjectRef.current) return false;
             isCreatingProjectRef.current = true;
-            const name = `Byt ${new Date().toLocaleDateString('cs-CZ')}`;
+            const name = `${mode === "room" ? "Místnost" : "Byt"} ${new Date().toLocaleDateString('cs-CZ')}`;
 
-            const saved = await createProject({ name, sourceImage: base64Image });
+            const saved = await createProject({ name, kind: mode, sourceImage: base64Image });
 
             if(!saved) {
                 console.error("Failed to create project");
@@ -72,18 +73,18 @@ export default function Home() {
           <section className="hero">
               <div className="announce">
                   <div className="dot" />
-                  <p>AI vizualizace půdorysů</p>
+                  <p>AI návrhy interiérů</p>
               </div>
 
-              <h1>Z půdorysu <em>3D vizualizace</em></h1>
+              <h1>Uvidíte, jak <em>to bude vypadat</em></h1>
 
               <p className="subtitle">
-                  Nahrajte 2D půdorys a za necelou minutu dostanete fotorealistický pohled shora se stěnami, dveřmi, okny i nábytkem.
+                  Vyfoťte místnost, vyberte styl a AI ji za necelou minutu zařídí. Nebo nahrajte 2D půdorys a dostanete 3D pohled shora.
               </p>
 
               <div className="actions">
                   <a href="#upload" className="cta">
-                      Nahrát půdorys <ArrowRight className="icon" />
+                      Začít <ArrowRight className="icon" />
                   </a>
 
                   <a href="#projects" className="btn btn--outline btn--lg">
@@ -95,13 +96,28 @@ export default function Home() {
                 <div className="grid-overlay" />
 
                   <div className="upload-card">
+                      <div className="mode-switch" role="tablist">
+                          <button type="button" role="tab" aria-selected={mode === "room"}
+                                  className={mode === "room" ? "is-active" : ""} onClick={() => setMode("room")}>
+                              <Sofa size={16} /> Fotka místnosti
+                          </button>
+                          <button type="button" role="tab" aria-selected={mode === "floorplan"}
+                                  className={mode === "floorplan" ? "is-active" : ""} onClick={() => setMode("floorplan")}>
+                              <Layers size={16} /> Půdorys
+                          </button>
+                      </div>
+
                       <div className="upload-head">
                           <div className="upload-icon">
-                              <Layers className="icon" />
+                              {mode === "room" ? <Sofa className="icon" /> : <Layers className="icon" />}
                           </div>
 
-                          <h3>Nahrajte půdorys</h3>
-                          <p>Formáty JPG, PNG a WebP do 10 MB</p>
+                          <h3>{mode === "room" ? "Nahrajte fotku místnosti" : "Nahrajte půdorys"}</h3>
+                          <p>
+                              {mode === "room"
+                                  ? "Prázdná i zařízená místnost. Styl vyberete v dalším kroku."
+                                  : "Z 2D plánu vznikne 3D pohled shora."}
+                          </p>
                       </div>
 
                       <Upload onComplete={handleUploadComplete} />
@@ -119,7 +135,7 @@ export default function Home() {
                   </div>
 
                   <div className="projects-grid">
-                      {projects.map(({id, name, renderedImage, sourceImage, timestamp, isPublic}) => (
+                      {projects.map(({id, name, renderedImage, sourceImage, timestamp, isPublic, kind}) => (
                           <div key={id} className="project-card group" onClick={() => navigate(`/visualizer/${id}`)}>
                               <div className="preview">
                                   <img  src={renderedImage || sourceImage} alt="Projekt"
@@ -135,6 +151,8 @@ export default function Home() {
                                       <h3>{name}</h3>
 
                                       <div className="meta">
+                                          <span>{kind === 'room' ? 'Návrh interiéru' : 'Půdorys'}</span>
+                                          <span aria-hidden>·</span>
                                           <Clock size={12} />
                                           <span>{new Date(timestamp).toLocaleDateString('cs-CZ')}</span>
                                       </div>
