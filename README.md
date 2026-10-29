@@ -141,7 +141,7 @@ The app runs entirely on your own server: no Puter or other third-party backend.
 
 - **Accounts**: email + password, stored in a local SQLite database, with signed session cookies.
 - **Storage**: uploaded floor plans and renders are saved on disk (`DATA_DIR`, `/data` in Docker). Projects are private by default.
-- **AI**: rendering runs on the server with your own API key (Gemini `gemini-2.5-flash-image` by default, or OpenAI `gpt-image-1`). The key never reaches the browser.
+- **AI**: rendering runs on the server with your own API key (Gemini `gemini-3.1-flash-lite-image` by default, or OpenAI `gpt-image-1`). The key never reaches the browser.
 
 Run it with Docker:
 

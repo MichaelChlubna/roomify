@@ -17,7 +17,7 @@ const requireEnv = (name: string) => {
 // Gemini image model (aka "Nano Banana"): edits the floor plan image directly.
 const renderWithGemini = async ({ image, mimeType }: RenderInput): Promise<RenderOutput> => {
     const apiKey = requireEnv("GEMINI_API_KEY");
-    const model = process.env.GEMINI_MODEL || "gemini-2.5-flash-image";
+    const model = process.env.GEMINI_MODEL || "gemini-3.1-flash-lite-image";
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
         method: "POST",
