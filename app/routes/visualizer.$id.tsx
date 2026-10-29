@@ -1,9 +1,9 @@
 import { useNavigate, useOutletContext, useParams} from "react-router";
 import {useEffect, useRef, useState} from "react";
-import {Download, RefreshCcw, Share2, X} from "lucide-react";
+import {Check, Copy, Download, RefreshCcw, Share2, X} from "lucide-react";
 import Button from "../../components/ui/Button";
-import {getProjectById, renderProject} from "../../lib/api";
-import {APP_NAME} from "../../lib/constants";
+import {getProjectById, renderProject, setProjectVisibility} from "../../lib/api";
+import {APP_NAME, SHARE_STATUS_RESET_DELAY_MS} from "../../lib/constants";
 import {ReactCompareSlider, ReactCompareSliderImage} from "react-compare-slider";
 
 const VisualizerId = () => {
@@ -20,6 +20,44 @@ const VisualizerId = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [renderError, setRenderError] = useState<string | null>(null);
     const [currentImage, setCurrentImage] = useState<string | null>(null);
+    const [shareStatus, setShareStatus] = useState<ShareStatus>("idle");
+
+    const shareUrl = typeof window !== "undefined" && id ? `${window.location.origin}/visualizer/${id}` : "";
+
+    const copyShareUrl = async () => {
+        try {
+            await navigator.clipboard.writeText(shareUrl);
+            setShareStatus("done");
+            setTimeout(() => setShareStatus("idle"), SHARE_STATUS_RESET_DELAY_MS);
+        } catch {
+            setShareStatus("idle");
+        }
+    }
+
+    const handleShare = async () => {
+        if (!project) return;
+
+        try {
+            if (!project.isPublic) {
+                setShareStatus("saving");
+                setProject(await setProjectVisibility({ id: project.id, isPublic: true }));
+            }
+            await copyShareUrl();
+        } catch (error) {
+            console.error('Share failed: ', error);
+            setShareStatus("idle");
+        }
+    }
+
+    const handleUnshare = async () => {
+        if (!project) return;
+
+        try {
+            setProject(await setProjectVisibility({ id: project.id, isPublic: false }));
+        } catch (error) {
+            console.error('Unshare failed: ', error);
+        }
+    }
 
     const handleBack = () => navigate('/');
     const handleExport = () => {
@@ -113,13 +151,23 @@ const VisualizerId = () => {
                 </div>
             </nav>
 
+            {!isProjectLoading && !project && (
+                <section className="content">
+                    <div className="panel not-found">
+                        <h2>Projekt nenalezen</h2>
+                        <p>Projekt neexistuje, nebo ho autor přestal sdílet.</p>
+                    </div>
+                </section>
+            )}
+
+            {project && (
             <section className="content">
                 <div className="panel">
                     <div className="panel-header">
                         <div className="panel-meta">
                             <p>Projekt</p>
                             <h2>{project?.name || 'Projekt'}</h2>
-                            <p className="note">Vytvořeno vámi</p>
+                            <p className="note">{isOwner ? 'Vytvořeno vámi' : `Sdíleno přes ${APP_NAME}`}</p>
                         </div>
 
                         <div className="panel-actions">
@@ -130,12 +178,28 @@ const VisualizerId = () => {
                             >
                                 <Download className="w-4 h-4" /> Stáhnout
                             </Button>
-                            <Button variant="outline" size="sm" onClick={() => {}}>
-                                <Share2 className="w-4 h-4" />
-                                Sdílet
-                            </Button>
+                            {isOwner && (
+                                <Button variant="outline" size="sm" onClick={handleShare}
+                                        disabled={!currentImage || shareStatus === "saving"}>
+                                    {shareStatus === "done" ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
+                                    {shareStatus === "done" ? 'Odkaz zkopírován' : 'Sdílet'}
+                                </Button>
+                            )}
                         </div>
                     </div>
+
+                    {isOwner && project?.isPublic && (
+                        <div className="share-bar">
+                            <span className="share-label">Sdíleno odkazem</span>
+                            <input className="share-url" value={shareUrl} readOnly onFocus={(e) => e.target.select()} />
+                            <Button variant="outline" size="sm" onClick={copyShareUrl}>
+                                <Copy className="w-4 h-4" /> Kopírovat
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={handleUnshare}>
+                                Zrušit sdílení
+                            </Button>
+                        </div>
+                    )}
 
                     <div className={`render-area ${isProcessing ? 'is-processing': ''}`}>
                         {currentImage ? (
@@ -206,6 +270,7 @@ const VisualizerId = () => {
                     </div>
                 </div>
             </section>
+            )}
         </div>
     )
 }

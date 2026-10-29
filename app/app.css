@@ -273,6 +273,30 @@
                 }
             }
 
+            .share-bar {
+                @apply flex flex-wrap items-center gap-2.5 px-5 py-3 bg-accent border-b border-border;
+
+                .share-label {
+                    @apply text-sm font-semibold text-accent-foreground;
+                }
+
+                .share-url {
+                    @apply flex-1 min-w-48 h-9 rounded-xl border border-input bg-card px-3 text-sm text-subtle-foreground focus:outline-none focus:ring-2 focus:ring-ring/50;
+                }
+            }
+
+            &.not-found {
+                @apply p-10 text-center;
+
+                h2 {
+                    @apply text-2xl font-bold text-foreground;
+                }
+
+                p {
+                    @apply text-muted-foreground mt-2;
+                }
+            }
+
             .render-area {
                 @apply relative bg-muted min-h-105;
 
