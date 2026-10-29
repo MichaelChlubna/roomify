@@ -17,13 +17,13 @@ export async function action({ request }: Route.ActionArgs) {
     const parsed = typeof body?.sourceImage === "string" ? parseDataUrl(body.sourceImage) : null;
 
     if (!parsed || !isSupportedImageType(parsed.mimeType)) {
-        return Response.json({ error: "Upload a PNG, JPG or WebP image" }, { status: 400 });
+        return Response.json({ error: "Nahrajte obrázek ve formátu PNG, JPG nebo WebP" }, { status: 400 });
     }
     if (parsed.buffer.length > MAX_UPLOAD_BYTES) {
-        return Response.json({ error: "Image is too large" }, { status: 413 });
+        return Response.json({ error: "Obrázek je příliš velký" }, { status: 413 });
     }
 
-    const name = String(body?.name ?? "").trim().slice(0, 120) || "Untitled project";
+    const name = String(body?.name ?? "").trim().slice(0, 120) || "Projekt bez názvu";
     const project = await createProject({ ownerId: user.id, name, source: parsed.buffer, mimeType: parsed.mimeType });
 
     return Response.json({ project: toDesignItem(project) }, { status: 201 });

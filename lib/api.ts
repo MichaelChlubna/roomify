@@ -10,7 +10,7 @@ const request = async <T>(url: string, init?: RequestInit): Promise<T> => {
     const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-        throw new Error(data?.error || `Request failed (${response.status})`);
+        throw new Error(data?.error || `Požadavek selhal (${response.status})`);
     }
 
     return data as T;
