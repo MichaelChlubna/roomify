@@ -80,3 +80,12 @@ export const renderProject = async ({ id }: { id: string }) => {
     });
     return project;
 };
+
+// Makes a project viewable by anyone with its link (or private again).
+export const setProjectVisibility = async ({ id, isPublic }: { id: string; isPublic: boolean }) => {
+    const { project } = await request<{ project: DesignItem }>(`/api/projects/${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        body: JSON.stringify({ isPublic }),
+    });
+    return project;
+};
