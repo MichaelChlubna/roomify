@@ -273,6 +273,46 @@
                 }
             }
 
+            .design-controls {
+                @apply flex flex-col gap-3 p-5 border-b border-border;
+
+                .design-label {
+                    @apply flex flex-wrap items-baseline gap-x-2 text-sm font-semibold text-foreground;
+                }
+
+                .hint {
+                    @apply text-xs font-normal text-muted-foreground;
+                }
+
+                .style-grid {
+                    @apply grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2;
+                }
+
+                .style-chip {
+                    @apply flex flex-col items-start text-left gap-0.5 rounded-xl border border-border-strong bg-card px-3 py-2.5 transition-all duration-200 hover:border-primary/60 hover:bg-muted disabled:opacity-60 disabled:cursor-not-allowed;
+
+                    .label {
+                        @apply text-sm font-semibold text-foreground;
+                    }
+
+                    &.is-active {
+                        @apply border-primary bg-accent ring-1 ring-primary;
+
+                        .label {
+                            @apply text-accent-foreground;
+                        }
+                    }
+                }
+
+                .design-input {
+                    @apply w-full rounded-xl border border-input bg-card px-3.5 py-2.5 text-[15px] resize-y focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-primary disabled:opacity-60;
+                }
+
+                .design-submit {
+                    @apply flex flex-wrap items-center gap-3;
+                }
+            }
+
             .share-bar {
                 @apply flex flex-wrap items-center gap-2.5 px-5 py-3 bg-accent border-b border-border;
 
@@ -316,6 +356,10 @@
 
                 .render-fallback {
                     @apply w-full h-full object-contain opacity-50;
+
+                    &.is-photo {
+                        @apply opacity-100;
+                    }
                 }
 
                 .render-overlay {
@@ -424,6 +468,18 @@
 
                 .upload-card {
                     @apply relative w-full max-w-xl bg-card rounded-[18px] border border-border p-8 z-10 shadow-[0_30px_80px_-30px_rgba(23,25,28,0.35)];
+
+                    .mode-switch {
+                        @apply grid grid-cols-2 gap-1 p-1 mb-6 rounded-xl bg-muted;
+
+                        button {
+                            @apply inline-flex items-center justify-center gap-2 h-10 rounded-[10px] text-sm font-semibold text-subtle-foreground transition-all duration-200 hover:text-foreground;
+
+                            &.is-active {
+                                @apply bg-card text-foreground shadow-[0_2px_8px_-3px_rgba(23,25,28,0.25)];
+                            }
+                        }
+                    }
 
                     .upload-head {
                         @apply text-center mb-6;

@@ -25,6 +25,9 @@ interface DesignItem {
     sharedBy?: string | null;
     sharedAt?: string | null;
     isPublic?: boolean;
+    kind?: "floorplan" | "room";
+    style?: string | null;
+    instructions?: string | null;
 }
 
 interface DesignConfig {

@@ -37,5 +37,11 @@ export const getDb = () => {
         CREATE INDEX IF NOT EXISTS projects_owner_idx ON projects(owner_id, created_at);
     `);
 
+    // Columns added after the first release; older databases get them on startup.
+    const projectColumns = (db.prepare("PRAGMA table_info(projects)").all() as { name: string }[]).map((c) => c.name);
+    if (!projectColumns.includes("kind")) db.exec("ALTER TABLE projects ADD COLUMN kind TEXT NOT NULL DEFAULT 'floorplan'");
+    if (!projectColumns.includes("style")) db.exec("ALTER TABLE projects ADD COLUMN style TEXT");
+    if (!projectColumns.includes("instructions")) db.exec("ALTER TABLE projects ADD COLUMN instructions TEXT");
+
     return db;
 };

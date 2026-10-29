@@ -3,6 +3,7 @@ import { requireUser } from "../server/auth.server";
 import { createProject, listProjects, toDesignItem } from "../server/projects.server";
 import { isSupportedImageType, parseDataUrl } from "../server/storage.server";
 import { MAX_UPLOAD_BYTES } from "../server/config.server";
+import { PROJECT_KINDS, type ProjectKind } from "../../lib/constants";
 
 export async function loader({ request }: Route.LoaderArgs) {
     const user = await requireUser(request);
@@ -24,7 +25,8 @@ export async function action({ request }: Route.ActionArgs) {
     }
 
     const name = String(body?.name ?? "").trim().slice(0, 120) || "Projekt bez názvu";
-    const project = await createProject({ ownerId: user.id, name, source: parsed.buffer, mimeType: parsed.mimeType });
+    const kind: ProjectKind = PROJECT_KINDS.includes(body?.kind) ? body.kind : "floorplan";
+    const project = await createProject({ ownerId: user.id, name, kind, source: parsed.buffer, mimeType: parsed.mimeType });
 
     return Response.json({ project: toDesignItem(project) }, { status: 201 });
 }
