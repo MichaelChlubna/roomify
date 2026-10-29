@@ -5,11 +5,12 @@ import Upload from "../../components/Upload";
 import {useNavigate, useOutletContext} from "react-router";
 import {useEffect, useRef, useState} from "react";
 import {createProject, getProjects} from "../../lib/api";
+import {APP_NAME} from "../../lib/constants";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Roomify" },
-    { name: "description", content: "Turn 2D floor plans into photorealistic 3D renders." },
+    { title: `${APP_NAME} | Vizualizace půdorysů` },
+    { name: "description", content: "Z 2D půdorysu fotorealistická 3D vizualizace za necelou minutu." },
   ];
 }
 
@@ -24,7 +25,7 @@ export default function Home() {
 
             if(isCreatingProjectRef.current) return false;
             isCreatingProjectRef.current = true;
-            const name = `Residence ${new Date().toLocaleDateString()}`;
+            const name = `Byt ${new Date().toLocaleDateString('cs-CZ')}`;
 
             const saved = await createProject({ name, sourceImage: base64Image });
 
@@ -71,22 +72,22 @@ export default function Home() {
           <section className="hero">
               <div className="announce">
                   <div className="dot" />
-                  <p>AI floor plan visualization</p>
+                  <p>AI vizualizace půdorysů</p>
               </div>
 
-              <h1>Turn a floor plan into a <em>3D render</em></h1>
+              <h1>Z půdorysu <em>3D vizualizace</em></h1>
 
               <p className="subtitle">
-                  Upload a 2D floor plan and get a photorealistic top-down render with walls, doors, windows and furniture in under a minute.
+                  Nahrajte 2D půdorys a za necelou minutu dostanete fotorealistický pohled shora se stěnami, dveřmi, okny i nábytkem.
               </p>
 
               <div className="actions">
                   <a href="#upload" className="cta">
-                      Start Building <ArrowRight className="icon" />
+                      Nahrát půdorys <ArrowRight className="icon" />
                   </a>
 
                   <a href="#projects" className="btn btn--outline btn--lg">
-                      My projects
+                      Moje projekty
                   </a>
               </div>
 
@@ -99,8 +100,8 @@ export default function Home() {
                               <Layers className="icon" />
                           </div>
 
-                          <h3>Upload your floor plan</h3>
-                          <p>Supports JPG, PNG, formats up to 10MB</p>
+                          <h3>Nahrajte půdorys</h3>
+                          <p>Formáty JPG, PNG a WebP do 10 MB</p>
                       </div>
 
                       <Upload onComplete={handleUploadComplete} />
@@ -112,8 +113,8 @@ export default function Home() {
               <div className="section-inner">
                   <div className="section-head">
                       <div className="copy">
-                          <h2>Projects</h2>
-                          <p>Your latest work, all in one place.</p>
+                          <h2>Projekty</h2>
+                          <p>Všechny vaše vizualizace na jednom místě.</p>
                       </div>
                   </div>
 
@@ -121,11 +122,11 @@ export default function Home() {
                       {projects.map(({id, name, renderedImage, sourceImage, timestamp, isPublic}) => (
                           <div key={id} className="project-card group" onClick={() => navigate(`/visualizer/${id}`)}>
                               <div className="preview">
-                                  <img  src={renderedImage || sourceImage} alt="Project"
+                                  <img  src={renderedImage || sourceImage} alt="Projekt"
                                   />
 
                                   <div className="badge">
-                                      <span>{isPublic ? 'Public' : 'Private'}</span>
+                                      <span>{isPublic ? 'Veřejný' : 'Soukromý'}</span>
                                   </div>
                               </div>
 
@@ -135,7 +136,7 @@ export default function Home() {
 
                                       <div className="meta">
                                           <Clock size={12} />
-                                          <span>{new Date(timestamp).toLocaleDateString()}</span>
+                                          <span>{new Date(timestamp).toLocaleDateString('cs-CZ')}</span>
                                       </div>
                                   </div>
                                   <div className="arrow">

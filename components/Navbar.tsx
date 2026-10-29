@@ -1,5 +1,6 @@
 import Button from "./ui/Button";
 import {useOutletContext} from "react-router";
+import {APP_NAME} from "../lib/constants";
 
 const Navbar = () => {
     const { isSignedIn, userName, signIn, signOut } = useOutletContext<AuthContext>()
@@ -27,16 +28,16 @@ const Navbar = () => {
             <nav className="inner">
                 <div className="left">
                     <div className="brand">
-                        <span className="logo-mark">R</span>
+                        <span className="logo-mark">{APP_NAME[0]}</span>
 
                         <span className="name">
-                            Roomify
+                            {APP_NAME}
                         </span>
                     </div>
 
                     <div className="links">
-                        <a href="/#upload">New render</a>
-                        <a href="/#projects">Projects</a>
+                        <a href="/#upload">Nová vizualizace</a>
+                        <a href="/#projects">Projekty</a>
                     </div>
                 </div>
 
@@ -44,20 +45,20 @@ const Navbar = () => {
                     {isSignedIn ? (
                         <>
                             <span className="greeting">
-                                {userName ? `Hi, ${userName}` : 'Signed in'}
+                                {userName ? `Ahoj, ${userName}` : 'Přihlášen'}
                             </span>
 
                             <Button variant="outline" size="md" onClick={handleAuthClick}>
-                                Log Out
+                                Odhlásit
                             </Button>
                         </>
                     ) : (
                         <>
                             <Button onClick={handleAuthClick} size="md" variant="ghost">
-                                Log In
+                                Přihlásit
                             </Button>
 
-                            <a href="#upload" className="cta">Get Started</a>
+                            <a href="#upload" className="cta">Začít</a>
                         </>
                     )}
                 </div>

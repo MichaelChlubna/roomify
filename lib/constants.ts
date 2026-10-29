@@ -1,3 +1,6 @@
+// Brand name shown across the UI; change it here to rename the service.
+export const APP_NAME = "Interio";
+
 // Timing Constants (in milliseconds)
 export const SHARE_STATUS_RESET_DELAY_MS = 1500;
 export const PROGRESS_INCREMENT = 15;

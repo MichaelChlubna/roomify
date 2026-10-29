@@ -85,7 +85,7 @@ export const getUser = async (request: Request) => {
 
 export const requireUser = async (request: Request) => {
     const user = await getUser(request);
-    if (!user) throw Response.json({ error: "Authentication required" }, { status: 401 });
+    if (!user) throw Response.json({ error: "Je potřeba se přihlásit" }, { status: 401 });
     return user;
 };
 

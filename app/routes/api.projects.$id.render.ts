@@ -21,6 +21,6 @@ export async function action({ request, params }: Route.ActionArgs) {
         return Response.json({ project: toDesignItem(updated) });
     } catch (e) {
         console.error("Render failed:", e);
-        return Response.json({ error: "Rendering failed" }, { status: 502 });
+        return Response.json({ error: "Vizualizaci se nepodařilo vytvořit. Zkuste to prosím později." }, { status: 502 });
     }
 }

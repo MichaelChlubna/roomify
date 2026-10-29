@@ -119,10 +119,10 @@ const Upload = ({ onComplete }: UploadProps) => {
                         </div>
                         <p>
                             {isSignedIn ? (
-                                "Click to upload or just drag and drop"
-                            ): ("Sign in or create an account to upload")}
+                                "Klikněte pro nahrání nebo soubor přetáhněte sem"
+                            ): ("Pro nahrání se nejdřív přihlaste")}
                         </p>
-                        <p className="help">Maximum file size 50 MB.</p>
+                        <p className="help">JPG, PNG nebo WebP, nejvýše 10 MB.</p>
                     </div>
                 </div>
             ) : (
@@ -142,7 +142,7 @@ const Upload = ({ onComplete }: UploadProps) => {
                             <div className="bar" style={{ width: `${progress}%` }} />
 
                             <p className="status-text">
-                                {progress < 100 ? 'Analyzing Floor Plan...' : 'Redirecting...'}
+                                {progress < 100 ? 'Načítám půdorys…' : 'Přesměrovávám…'}
                             </p>
                         </div>
                     </div>

@@ -309,7 +309,7 @@
                         }
 
                         .subtitle {
-                            @apply text-xs text-muted-foreground mt-1;
+                            @apply text-xs text-muted-foreground mt-1 max-w-xs text-center;
                         }
                     }
                 }

@@ -29,13 +29,13 @@ export async function action({ request }: Route.ActionArgs) {
     const password = String(body?.password ?? "");
 
     if (!EMAIL_PATTERN.test(email) || !password) {
-        return Response.json({ error: "Enter a valid email and password" }, { status: 400 });
+        return Response.json({ error: "Zadejte platný e-mail a heslo" }, { status: 400 });
     }
 
     if (intent === "register") {
-        if (!ALLOW_REGISTRATION) return Response.json({ error: "Registration is disabled" }, { status: 403 });
-        if (password.length < 8) return Response.json({ error: "Password must be at least 8 characters" }, { status: 400 });
-        if (findUserByEmail(email)) return Response.json({ error: "An account with this email already exists" }, { status: 409 });
+        if (!ALLOW_REGISTRATION) return Response.json({ error: "Registrace je momentálně vypnutá" }, { status: 403 });
+        if (password.length < 8) return Response.json({ error: "Heslo musí mít aspoň 8 znaků" }, { status: 400 });
+        if (findUserByEmail(email)) return Response.json({ error: "Účet s tímto e-mailem už existuje" }, { status: 409 });
 
         const name = String(body?.name ?? "").trim() || email.split("@")[0];
         const user = await createUser({ email, name, password });
@@ -46,7 +46,7 @@ export async function action({ request }: Route.ActionArgs) {
     if (intent === "login") {
         const user = findUserByEmail(email);
         if (!user || !(await verifyPassword(password, user.password_hash))) {
-            return Response.json({ error: "Invalid email or password" }, { status: 401 });
+            return Response.json({ error: "Nesprávný e-mail nebo heslo" }, { status: 401 });
         }
 
         return Response.json({ user: toPublicUser(user) }, { headers: await createUserSessionHeaders(request, user.id) });
