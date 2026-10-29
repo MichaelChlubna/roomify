@@ -1,6 +1,6 @@
 import { useNavigate, useOutletContext, useParams} from "react-router";
 import {useEffect, useRef, useState} from "react";
-import {Box, Download, RefreshCcw, Share2, X} from "lucide-react";
+import {Download, RefreshCcw, Share2, X} from "lucide-react";
 import Button from "../../components/ui/Button";
 import {getProjectById, renderProject} from "../../lib/api";
 import {ReactCompareSlider, ReactCompareSliderImage} from "react-compare-slider";
@@ -98,14 +98,15 @@ const VisualizerId = () => {
     return (
         <div className="visualizer">
             <nav className="topbar">
-                <div className="brand">
-                    <Box className="logo" />
-
-                    <span className="name">Roomify</span>
+                <div className="topbar-inner">
+                    <div className="brand" onClick={handleBack}>
+                        <span className="logo-mark">R</span>
+                        <span className="name">Roomify</span>
+                    </div>
+                    <Button variant="ghost" size="md" onClick={handleBack} className="exit">
+                        <X className="icon" /> Exit editor
+                    </Button>
                 </div>
-                <Button variant="ghost" size="sm" onClick={handleBack} className="exit">
-                    <X className="icon" /> Exit Editor
-                </Button>
             </nav>
 
             <section className="content">
@@ -121,13 +122,12 @@ const VisualizerId = () => {
                             <Button
                                 size="sm"
                                 onClick={handleExport}
-                                className="export"
                                 disabled={!currentImage}
                             >
-                                <Download className="w-4 h-4 mr-2" /> Export
+                                <Download className="w-4 h-4" /> Export
                             </Button>
-                            <Button size="sm" onClick={() => {}} className="share">
-                                <Share2 className="w-4 h-4 mr-2" />
+                            <Button variant="outline" size="sm" onClick={() => {}}>
+                                <Share2 className="w-4 h-4" />
                                 Share
                             </Button>
                         </div>

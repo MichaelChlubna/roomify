@@ -1,4 +1,3 @@
-import {Box} from "lucide-react";
 import Button from "./ui/Button";
 import {useOutletContext} from "react-router";
 
@@ -28,19 +27,17 @@ const Navbar = () => {
             <nav className="inner">
                 <div className="left">
                     <div className="brand">
-                        <Box  className="logo" />
+                        <span className="logo-mark">R</span>
 
                         <span className="name">
                             Roomify
                         </span>
                     </div>
 
-                    <ul className="links">
-                        <a href="#">Product</a>
-                        <a href="#">Pricing</a>
-                        <a href="#">Community</a>
-                        <a href="#">Enterprise</a>
-                    </ul>
+                    <div className="links">
+                        <a href="/#upload">New render</a>
+                        <a href="/#projects">Projects</a>
+                    </div>
                 </div>
 
                 <div className="actions">
@@ -50,13 +47,13 @@ const Navbar = () => {
                                 {userName ? `Hi, ${userName}` : 'Signed in'}
                             </span>
 
-                            <Button size="sm" onClick={handleAuthClick} className="btn">
+                            <Button variant="outline" size="md" onClick={handleAuthClick}>
                                 Log Out
                             </Button>
                         </>
                     ) : (
                         <>
-                            <Button onClick={handleAuthClick} size="sm" variant="ghost">
+                            <Button onClick={handleAuthClick} size="md" variant="ghost">
                                 Log In
                             </Button>
 
