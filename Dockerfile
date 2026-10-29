@@ -1,22 +1,31 @@
-FROM node:20-alpine AS development-dependencies-env
+FROM node:22-alpine AS development-dependencies-env
 COPY . /app
 WORKDIR /app
 RUN npm ci
 
-FROM node:20-alpine AS production-dependencies-env
+FROM node:22-alpine AS production-dependencies-env
 COPY ./package.json package-lock.json /app/
 WORKDIR /app
 RUN npm ci --omit=dev
 
-FROM node:20-alpine AS build-env
+FROM node:22-alpine AS build-env
 COPY . /app/
 COPY --from=development-dependencies-env /app/node_modules /app/node_modules
 WORKDIR /app
 RUN npm run build
 
-FROM node:20-alpine
+FROM node:22-alpine
 COPY ./package.json package-lock.json /app/
 COPY --from=production-dependencies-env /app/node_modules /app/node_modules
 COPY --from=build-env /app/build /app/build
 WORKDIR /app
+ENV NODE_ENV=production
+ENV DATA_DIR=/data
+RUN mkdir -p /data && chown node:node /data
+USER node
+VOLUME /data
+EXPOSE 3000
+# Coolify routes only healthy containers, so probe often while starting
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --start-interval=2s \
+  CMD wget -q -O /dev/null http://127.0.0.1:3000/api/health || exit 1
 CMD ["npm", "run", "start"]

@@ -10,11 +10,8 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import {useEffect, useState} from "react";
-import {
-    getCurrentUser,
-    signIn as puterSignIn,
-    signOut as puterSignOut,
-} from "../lib/puter.action";
+import {useNavigate} from "react-router";
+import {getCurrentUser, signOut as apiSignOut} from "../lib/api";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -54,6 +51,7 @@ const DEFAULT_AUTH_STATE: AuthState = {
 }
 
 export default function App() {
+    const navigate = useNavigate();
     const [authState, setAuthState] = useState<AuthState>(DEFAULT_AUTH_STATE);
 
     const refreshAuth = async () => {
@@ -62,8 +60,8 @@ export default function App() {
 
             setAuthState({
                 isSignedIn: !!user,
-                userName: user?.username || null,
-                userId: user?.uuid || null,
+                userName: user?.name || null,
+                userId: user?.id || null,
             });
 
             return !!user;
@@ -77,13 +75,10 @@ export default function App() {
         refreshAuth()
     }, []);
 
-    const signIn = async () => {
-        await puterSignIn();
-        return await refreshAuth();
-    }
+    const signIn = () => navigate('/login');
 
     const signOut = async () => {
-        puterSignOut();
+        await apiSignOut();
         return await refreshAuth();
     }
 
@@ -91,7 +86,7 @@ export default function App() {
       <main className="min-h-screen bg-background text-foreground relative z-10">
         <Outlet
             context={{ ...authState, refreshAuth, signIn, signOut }}
-        />;
+        />
       </main>
   )
 }

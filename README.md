@@ -117,13 +117,15 @@ npm install
 
 **Set Up Environment Variables**
 
-Create a new file named `.env` in the root of your project and add the following content:
+Copy `.env.example` to `.env` and fill in at least:
 
 ```env
-VITE_PUTER_WORKER_URL=""
+AI_PROVIDER=gemini
+GEMINI_API_KEY=your_google_ai_studio_key
+SESSION_SECRET=a_long_random_string
 ```
 
-Replace the placeholder values with your real credentials. You can get these by signing up at: [**Puter.com**](https://jsm.dev/roomify-puter).
+Get a Gemini key at [Google AI Studio](https://aistudio.google.com/apikey). To use OpenAI instead, set `AI_PROVIDER=openai` and `OPENAI_API_KEY`.
 
 **Running the Project**
 
@@ -131,7 +133,35 @@ Replace the placeholder values with your real credentials. You can get these by 
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser to view the project.
+Open [http://localhost:5173](http://localhost:5173) in your browser, create an account and upload a floor plan.
+
+## 🖥️ Self-hosting
+
+The app runs entirely on your own server: no Puter or other third-party backend.
+
+- **Accounts**: email + password, stored in a local SQLite database, with signed session cookies.
+- **Storage**: uploaded floor plans and renders are saved on disk (`DATA_DIR`, `/data` in Docker). Projects are private by default.
+- **AI**: rendering runs on the server with your own API key (Gemini `gemini-3.1-flash-lite-image` by default, or OpenAI `gpt-image-1`). The key never reaches the browser.
+
+Run it with Docker:
+
+```bash
+cp .env.example .env   # then fill in GEMINI_API_KEY and SESSION_SECRET
+docker compose up -d --build
+```
+
+The app listens on port 3000; put it behind a reverse proxy with HTTPS (e.g. Caddy or nginx). Login cookies are HTTPS-only in production. All data lives in the `roomify-data` volume, so back it up. After creating your own account you can set `ALLOW_REGISTRATION=false` to close sign-ups.
+
+### Coolify
+
+`docker-compose.coolify.yml` is the same stack without a published port (Coolify's proxy handles the domain and HTTPS).
+
+1. New Resource → Public Repository `https://github.com/MichaelChlubna/roomify`, branch `main`, Build Pack **Docker Compose**, Docker Compose Location `/docker-compose.coolify.yml`.
+2. Set the `web` service domain with the container port, e.g. `https://fotky.bytynadlani.cz:3000`.
+3. Environment variables: `GEMINI_API_KEY` and `SESSION_SECRET` (required), optionally `AI_PROVIDER`, `OPENAI_API_KEY`, `ALLOW_REGISTRATION`.
+4. Data stays in the `roomify-data` volume across redeploys.
+
+Requires Node.js 22.13+ when running without Docker (uses the built-in `node:sqlite`).
 
 ## <a name="links">🔗 Assets</a>
 

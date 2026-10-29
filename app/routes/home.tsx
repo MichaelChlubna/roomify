@@ -3,9 +3,9 @@ import Navbar from "../../components/Navbar";
 import {ArrowRight, ArrowUpRight, Clock, Layers} from "lucide-react";
 import Button from "../../components/ui/Button";
 import Upload from "../../components/Upload";
-import {useNavigate} from "react-router";
+import {useNavigate, useOutletContext} from "react-router";
 import {useEffect, useRef, useState} from "react";
-import {createProject, getProjects} from "../../lib/puter.action";
+import {createProject, getProjects} from "../../lib/api";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -16,6 +16,7 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Home() {
     const navigate = useNavigate();
+    const { isSignedIn } = useOutletContext<AuthContext>();
     const [projects, setProjects] = useState<DesignItem[]>([]);
     const isCreatingProjectRef = useRef(false);
 
@@ -24,16 +25,9 @@ export default function Home() {
 
             if(isCreatingProjectRef.current) return false;
             isCreatingProjectRef.current = true;
-            const newId = Date.now().toString();
-            const name = `Residence ${newId}`;
+            const name = `Residence ${new Date().toLocaleDateString()}`;
 
-            const newItem = {
-                id: newId, name, sourceImage: base64Image,
-                renderedImage: undefined,
-                timestamp: Date.now()
-            }
-
-            const saved = await createProject({ item: newItem, visibility: 'private' });
+            const saved = await createProject({ name, sourceImage: base64Image });
 
             if(!saved) {
                 console.error("Failed to create project");
@@ -42,7 +36,7 @@ export default function Home() {
 
             setProjects((prev) => [saved, ...prev]);
 
-            navigate(`/visualizer/${newId}`, {
+            navigate(`/visualizer/${saved.id}`, {
                 state: {
                     initialImage: saved.sourceImage,
                     initialRendered: saved.renderedImage || null,
@@ -57,6 +51,11 @@ export default function Home() {
     }
 
     useEffect(() => {
+        if (!isSignedIn) {
+            setProjects([]);
+            return;
+        }
+
         const fetchProjects = async () => {
             const items = await getProjects();
 
@@ -64,7 +63,7 @@ export default function Home() {
         }
 
         fetchProjects();
-    }, []);
+    }, [isSignedIn]);
 
   return (
       <div className="home">
@@ -118,19 +117,19 @@ export default function Home() {
                   <div className="section-head">
                       <div className="copy">
                           <h2>Projects</h2>
-                          <p>Your latest work and shared community projects, all in one place.</p>
+                          <p>Your latest work, all in one place.</p>
                       </div>
                   </div>
 
                   <div className="projects-grid">
-                      {projects.map(({id, name, renderedImage, sourceImage, timestamp}) => (
+                      {projects.map(({id, name, renderedImage, sourceImage, timestamp, isPublic}) => (
                           <div key={id} className="project-card group" onClick={() => navigate(`/visualizer/${id}`)}>
                               <div className="preview">
                                   <img  src={renderedImage || sourceImage} alt="Project"
                                   />
 
                                   <div className="badge">
-                                      <span>Community</span>
+                                      <span>{isPublic ? 'Public' : 'Private'}</span>
                                   </div>
                               </div>
 
@@ -141,7 +140,6 @@ export default function Home() {
                                       <div className="meta">
                                           <Clock size={12} />
                                           <span>{new Date(timestamp).toLocaleDateString()}</span>
-                                          <span>By JS Mastery</span>
                                       </div>
                                   </div>
                                   <div className="arrow">

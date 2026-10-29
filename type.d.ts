@@ -90,7 +90,7 @@ type AuthContext = {
     userName: string | null;
     userId: string | null;
     refreshAuth: () => Promise<boolean>;
-    signIn: () => Promise<boolean>;
+    signIn: () => void;
     signOut: () => Promise<boolean>;
 };
 
@@ -106,22 +106,3 @@ type AuthRequiredModalProps = {
 type ShareAction = "share" | "unshare";
 type ShareStatus = "idle" | "saving" | "done";
 
-type HostingConfig = { subdomain: string };
-type HostedAsset = { url: string };
-
-interface StoreHostedImageParams {
-    hosting: HostingConfig | null;
-    url: string;
-    projectId: string;
-    label: "source" | "rendered";
-}
-
-interface CreateProjectParams {
-    item: DesignItem;
-    visibility?: "private" | "public";
-}
-
-interface Generate3DViewParams {
-    sourceImage: string;
-    projectId?: string | null;
-}
