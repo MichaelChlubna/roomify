@@ -21,6 +21,11 @@ COPY --from=build-env /app/build /app/build
 WORKDIR /app
 ENV NODE_ENV=production
 ENV DATA_DIR=/data
+RUN mkdir -p /data && chown node:node /data
+USER node
 VOLUME /data
 EXPOSE 3000
+# Coolify routes only healthy containers, so probe often while starting
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --start-interval=2s \
+  CMD wget -q -O /dev/null http://127.0.0.1:3000/api/health || exit 1
 CMD ["npm", "run", "start"]

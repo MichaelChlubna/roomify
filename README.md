@@ -152,6 +152,15 @@ docker compose up -d --build
 
 The app listens on port 3000; put it behind a reverse proxy with HTTPS (e.g. Caddy or nginx). Login cookies are HTTPS-only in production. All data lives in the `roomify-data` volume, so back it up. After creating your own account you can set `ALLOW_REGISTRATION=false` to close sign-ups.
 
+### Coolify
+
+`docker-compose.coolify.yml` is the same stack without a published port (Coolify's proxy handles the domain and HTTPS).
+
+1. New Resource → Public Repository `https://github.com/MichaelChlubna/roomify`, branch `main`, Build Pack **Docker Compose**, Docker Compose Location `/docker-compose.coolify.yml`.
+2. Set the `web` service domain with the container port, e.g. `https://fotky.bytynadlani.cz:3000`.
+3. Environment variables: `GEMINI_API_KEY` and `SESSION_SECRET` (required), optionally `AI_PROVIDER`, `OPENAI_API_KEY`, `ALLOW_REGISTRATION`.
+4. Data stays in the `roomify-data` volume across redeploys.
+
 Requires Node.js 22.13+ when running without Docker (uses the built-in `node:sqlite`).
 
 ## <a name="links">🔗 Assets</a>
